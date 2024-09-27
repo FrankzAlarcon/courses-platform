@@ -1,0 +1,145 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  relationMode = "prisma"
+}
+
+model Course {
+  id String @id @default(uuid())
+  userId String
+  title String @db.Text
+  description String? @db.Text
+  imageUrl String? @db.Text
+  price Float?
+  isPublished Boolean @default(false) @map("is_published")
+
+  category Category? @relation(fields: [categoryId], references: [id])
+  categoryId String?
+
+  chapters Chapter[]
+  attachments Attachment[]
+  purchases Purchase[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([categoryId])
+  @@map("courses")
+}
+
+model Attachment {
+  id String @id @default(uuid())
+  name String
+  url String @db.Text
+
+  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  courseId String @map("course_id")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([courseId])
+  @@map("attachments")
+}
+
+model Category {
+  id String @id @default(uuid())
+  name String @unique
+
+  courses Course[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("categories")
+}
+
+model Chapter {
+  id String @id @default(uuid())
+  title String
+  description String? @db.Text
+  videoUrl String? @db.Text
+  position Int
+  isPublished Boolean @default(false) @map("is_published")
+  isFree Boolean @default(false) @map("is_free")
+
+  muxData MuxData?
+
+  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  courseId String @map("course_id")
+
+  userProgress UserProgress[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([courseId])
+  @@map("chapters")
+}
+
+model MuxData {
+  id String @id @default(uuid())
+  assetId String @unique
+  playbackId String? @unique
+  
+  chapter Chapter @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+  chapterId String @unique
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("mux_data")
+}
+
+model UserProgress {
+  id String @id @default(uuid())
+  userId String
+
+  chapter Chapter @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+  chapterId String @map("chapter_id")
+
+  isCompleted Boolean @default(false) @map("is_completed")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([chapterId])
+  @@unique([userId, chapterId])
+
+  @@map("user_progress")
+}
+
+model Purchase {
+  id String @id @default(uuid())
+  userId String
+
+  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  courseId String @map("course_id")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([courseId])
+  @@map("purchases")
+}
+
+model StripeCustomer {
+  id String @id @default(uuid())
+  userId String @unique
+  stripeCustomerId String @unique
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("stripe_customers")
+}
