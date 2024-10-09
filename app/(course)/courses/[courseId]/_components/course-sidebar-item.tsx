@@ -1,7 +1,7 @@
 "use client"
 
 import { cn } from '@/lib/utils'
-import { CheckCircle, Circle, Lock } from 'lucide-react'
+import { CheckCircle, Lock, PlayCircle } from 'lucide-react'
 import { usePathname, useRouter } from 'next/navigation'
 import React from 'react'
 
@@ -22,8 +22,8 @@ const CourseSidebarItem = ({
 }: CourseSidebarItemProps) => {
   const pathname = usePathname()
   const router = useRouter()
-
-  const Icon = isLocked ? Lock : (isCompleted ? CheckCircle : Circle)
+  console.log("Course Sidebar Item is completed", isCompleted)
+  const Icon = isLocked ? Lock : (isCompleted ? CheckCircle : PlayCircle)
   const isActive = pathname?.includes(id)
 
   const onClick = () => {
